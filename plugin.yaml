@@ -1,0 +1,14 @@
+name: pricewin
+version: "0.1.0"
+description: Renders PriceWin hotel and flight results as inline cards in the Hermes Desktop transcript.
+author: OpenTravel
+manifest_version: 1
+kind: standalone
+
+# UI-only package: the desktop half (desktop/plugin.js) is the whole plugin.
+# Search itself comes from the `pricewin` MCP catalog entry, so this package
+# registers no agent-side tools, hooks, middleware, and needs no credentials.
+provides_tools: []
+provides_hooks: []
+provides_middleware: []
+requires_env: []
