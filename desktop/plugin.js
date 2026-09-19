@@ -5,11 +5,11 @@
 // model writes a directive paragraph and the transcript renders a card.
 //
 //   ::pricewin-hotel{name="Liberty Central Riverside" price="58" stars="4"
-//                    area="District 1, Ho Chi Minh City" ota="Booking.com"
-//                    url="https://www.price.win/..."}
+//                    area="District 1, Ho Chi Minh City" ota="Agoda"
+//                    url="https://www.agoda.com/..."}
 //   ::pricewin-flight{route="SGN → HAN" airline="Vietnam Airlines" price="72"
 //                     depart="06:15" duration="2h10m" stops="0"
-//                     url="https://www.price.win/..."}
+//                     url="https://www.trip.com/..."}
 //
 // Constraints this file lives under, both enforced by the host:
 //   - loaded uncompiled, so no JSX syntax — jsx()/jsxs() calls only;
@@ -22,8 +22,25 @@
 import { host, TRANSCRIPT_DIRECTIVE_AREA } from '@hermes/plugin-sdk'
 import { jsx, jsxs } from 'react/jsx-runtime'
 
-/** Links may only point at PriceWin — a hallucinated host must not become a click target. */
-const ALLOWED_HOST = 'price.win'
+/**
+ * Hosts a card may link to: PriceWin itself and the OTAs whose booking pages the
+ * search results point at. Anything else — including a hallucinated host — gets
+ * no link at all rather than a click target.
+ */
+const ALLOWED_HOSTS = {
+  'price.win': 'PriceWin',
+  'agoda.com': 'Agoda',
+  'booking.com': 'Booking.com',
+  'traveloka.com': 'Traveloka',
+  'trip.com': 'Trip.com',
+}
+
+/** The site a validated link belongs to, for the button label — taken from the URL, never from the model's text. */
+function siteOf(url) {
+  const name = new URL(url).hostname.toLowerCase()
+  const match = Object.keys(ALLOWED_HOSTS).find((h) => name === h || name.endsWith('.' + h))
+  return match ? ALLOWED_HOSTS[match] : ''
+}
 
 const BORDER = '1px solid color-mix(in oklab, currentColor 18%, transparent)'
 const CARD_STYLE = {
@@ -55,9 +72,7 @@ function safeUrl(value) {
   try {
     const url = new URL(raw)
     if (url.protocol !== 'https:') return ''
-    const host_ = url.hostname.toLowerCase()
-    if (host_ !== ALLOWED_HOST && !host_.endsWith('.' + ALLOWED_HOST)) return ''
-    return url.toString()
+    return siteOf(url.toString()) ? url.toString() : ''
   } catch {
     return ''
   }
@@ -80,14 +95,14 @@ function openLink(ctx, url) {
   })
 }
 
-function linkButton(ctx, url, label) {
+function linkButton(ctx, url) {
   if (!url) return null
   return jsx('button', {
     type: 'button',
     className: 'mt-2 text-xs underline underline-offset-2',
     style: { opacity: 0.85 },
     onClick: () => openLink(ctx, url),
-    children: label,
+    children: 'View on ' + siteOf(url),
   })
 }
 
@@ -103,7 +118,7 @@ function priceBlock(amount, unit) {
 }
 
 /** Shared shell: title line + meta line on the left, price on the right, link underneath. */
-function resultCard(ctx, { title, meta, amount, unit, url, linkLabel }) {
+function resultCard(ctx, { title, meta, amount, unit, url }) {
   return jsxs('div', {
     style: CARD_STYLE,
     className: 'text-sm',
@@ -123,7 +138,7 @@ function resultCard(ctx, { title, meta, amount, unit, url, linkLabel }) {
           priceBlock(amount, unit),
         ],
       }),
-      linkButton(ctx, url, linkLabel),
+      linkButton(ctx, url),
     ],
   })
 }
@@ -137,7 +152,6 @@ function HotelCard({ ctx, attrs }) {
     amount: money(attrs.price),
     unit: 'per night',
     url: safeUrl(attrs.url),
-    linkLabel: 'View on PriceWin',
   })
 }
 
@@ -152,7 +166,6 @@ function FlightCard({ ctx, attrs }) {
     amount: money(attrs.price),
     unit: 'total',
     url: safeUrl(attrs.url),
-    linkLabel: 'View on PriceWin',
   })
 }
 

@@ -25,12 +25,12 @@ with a card:
 
 ```
 ::pricewin-hotel{name="Liberty Central Riverside" price="58" stars="4"
-                 area="District 1, Ho Chi Minh City" ota="Booking.com"
-                 url="https://www.price.win/..."}
+                 area="District 1, Ho Chi Minh City" ota="Agoda"
+                 url="https://www.agoda.com/..."}
 
 ::pricewin-flight{route="SGN → HAN" airline="Vietnam Airlines" price="72"
                   depart="06:15" duration="2h10m" stops="0"
-                  url="https://www.price.win/..."}
+                  url="https://www.trip.com/..."}
 ```
 
 | Directive | Attributes |
@@ -45,14 +45,17 @@ The `pricewin-travel-search` skill is what teaches the agent to emit these.
 Directive attributes are untrusted model output, so the plugin validates all of
 them and drops anything it cannot parse:
 
-- `url` must be `https:` **and** on `price.win` or a subdomain — any other host
-  renders no link at all, so a hallucinated URL never becomes a click target.
+- `url` must be `https:` **and** on PriceWin or one of the OTAs the search
+  results link to (Agoda, Booking.com, Traveloka, Trip.com), subdomains
+  included. Any other host renders no link at all, so a hallucinated URL never
+  becomes a click target. The button label names the site from the URL itself,
+  never from the model's text.
 - `price` must be a positive number; `stars` must be 1–5.
 - A card with no `name` (hotel) or `route` (flight) renders nothing.
 
 The plugin makes no network requests, reads no files, and stores no state. Links
 open in the system browser through `ctx.os.openExternal`. Payment and booking
-always happen on PriceWin, never in the transcript.
+always happen on the linked site, never in the transcript.
 
 ## Development
 
