@@ -11,7 +11,7 @@ entry.
 
 ```bash
 hermes mcp install pricewin      # the tools (hotel + flight search)
-hermes plugins install opentravel-one/pricewin-hermes-plugin --enable
+hermes plugins install PriceDotWin/pricewin-hermes-plugin --enable
 ```
 
 Without the MCP entry the plugin still loads, it just has nothing to draw. With

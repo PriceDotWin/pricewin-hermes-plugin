@@ -1,7 +1,7 @@
 name: pricewin
 version: "0.1.0"
 description: Renders PriceWin hotel and flight results as inline cards in the Hermes Desktop transcript.
-author: OpenTravel
+author: PriceWin
 manifest_version: 1
 kind: standalone
 
