@@ -1,5 +1,5 @@
 name: pricewin
-version: "0.1.0"
+version: "0.1.1"
 description: Renders PriceWin hotel and flight results as inline cards in the Hermes Desktop transcript.
 author: PriceWin
 manifest_version: 1

@@ -5,11 +5,11 @@
 // model writes a directive paragraph and the transcript renders a card.
 //
 //   ::pricewin-hotel{name="Liberty Central Riverside" price="58" stars="4"
-//                    area="District 1, Ho Chi Minh City" ota="Agoda"
-//                    url="https://www.agoda.com/..."}
+//                    area="District 1, Ho Chi Minh City" ota="agoda"
+//                    link="agoda.com/liberty-central/hotel/ho-chi-minh-city-vn.html?..."}
 //   ::pricewin-flight{route="SGN → HAN" airline="Vietnam Airlines" price="72"
 //                     depart="06:15" duration="2h10m" stops="0"
-//                     url="https://www.trip.com/..."}
+//                     link="trip.com/flights/..."}
 //
 // Constraints this file lives under, both enforced by the host:
 //   - loaded uncompiled, so no JSX syntax — jsx()/jsxs() calls only;
@@ -18,6 +18,12 @@
 //
 // Directive attributes are untrusted model output: every field is validated
 // here and a bad one is dropped rather than guessed at.
+//
+// Links come as `link`, WITHOUT `https://` or `www.`: Hermes Desktop autolinks
+// any URL in a message before it recognises directives, which splits the
+// directive paragraph and leaves it as raw text. The PriceWin MCP server hands
+// out links in exactly this form (short enough for the 1024-char attribute
+// cap, too). `url` is still read for a directive written the old way.
 
 import { host, TRANSCRIPT_DIRECTIVE_AREA } from '@hermes/plugin-sdk'
 import { jsx, jsxs } from 'react/jsx-runtime'
@@ -64,6 +70,18 @@ function money(value) {
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(amount)
+}
+
+/**
+ * The card's link as an https URL on an allowed host, or ''. Takes the
+ * scheme-less `link` attribute, else `url` — which, when Desktop autolinked it
+ * but the directive still parsed, arrives wrapped as `<https://…>` with stray
+ * backslash escapes.
+ */
+function cardUrl(attrs) {
+  const link = text(attrs.link).replace(/^\/+/, '')
+  if (link) return safeUrl(/^[a-z][a-z0-9+.-]*:/i.test(link) ? link : 'https://' + link)
+  return safeUrl(text(attrs.url).replace(/\\/g, '').replace(/^<(.*)>$/, '$1'))
 }
 
 function safeUrl(value) {
@@ -146,12 +164,14 @@ function resultCard(ctx, { title, meta, amount, unit, url }) {
 function HotelCard({ ctx, attrs }) {
   const name = text(attrs.name)
   if (!name) return null
+  const url = cardUrl(attrs)
   return resultCard(ctx, {
     title: joinParts([name, stars(attrs.stars)]),
-    meta: joinParts([text(attrs.area), text(attrs.ota), text(attrs.note)]),
+    // The site's own name when the link proves it ("Booking.com"), else the model's `ota` text.
+    meta: joinParts([text(attrs.area), url ? siteOf(url) : text(attrs.ota), text(attrs.note)]),
     amount: money(attrs.price),
     unit: 'per night',
-    url: safeUrl(attrs.url),
+    url,
   })
 }
 
@@ -165,7 +185,7 @@ function FlightCard({ ctx, attrs }) {
     meta: joinParts([text(attrs.depart), text(attrs.duration), stopLabel]),
     amount: money(attrs.price),
     unit: 'total',
-    url: safeUrl(attrs.url),
+    url: cardUrl(attrs),
   })
 }
 

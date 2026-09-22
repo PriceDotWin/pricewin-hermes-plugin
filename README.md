@@ -25,18 +25,28 @@ with a card:
 
 ```
 ::pricewin-hotel{name="Liberty Central Riverside" price="58" stars="4"
-                 area="District 1, Ho Chi Minh City" ota="Agoda"
-                 url="https://www.agoda.com/..."}
+                 area="District 1, Ho Chi Minh City" ota="agoda"
+                 link="agoda.com/liberty-central/hotel/ho-chi-minh-city-vn.html?..."}
 
 ::pricewin-flight{route="SGN → HAN" airline="Vietnam Airlines" price="72"
                   depart="06:15" duration="2h10m" stops="0"
-                  url="https://www.trip.com/..."}
+                  link="trip.com/flights/..."}
 ```
+
+**`link` has no `https://` and no `www.`.** Hermes Desktop turns any URL in a
+message into a hyperlink before it looks for directives, and a directive with a
+hyperlink inside is no longer one — it shows as raw text. The PriceWin MCP
+server gives every result a ready-made `link` in this form, trimmed to the dates
+and party so it fits the 1024-character attribute limit. A directive that uses
+`url="https://…"` instead is still read when it survives.
+
+The desktop half is **off by default** after install: turn it on under
+Capabilities → Plugins → PriceWin → Desktop.
 
 | Directive | Attributes |
 |---|---|
-| `pricewin-hotel` | `name` (required), `price` (USD), `stars` (1–5), `area`, `ota`, `note`, `url` |
-| `pricewin-flight` | `route` (required), `price` (USD), `airline`, `depart`, `duration`, `stops`, `url` |
+| `pricewin-hotel` | `name` (required), `price` (USD), `stars` (1–5), `area`, `ota`, `note`, `link` |
+| `pricewin-flight` | `route` (required), `price` (USD), `airline`, `depart`, `duration`, `stops`, `link` |
 
 The `pricewin-travel-search` skill is what teaches the agent to emit these.
 
@@ -45,7 +55,7 @@ The `pricewin-travel-search` skill is what teaches the agent to emit these.
 Directive attributes are untrusted model output, so the plugin validates all of
 them and drops anything it cannot parse:
 
-- `url` must be `https:` **and** on PriceWin or one of the OTAs the search
+- The link (`link`, or the older `url`) must resolve to `https:` **and** be on PriceWin or one of the OTAs the search
   results link to (Agoda, Booking.com, Traveloka, Trip.com), subdomains
   included. Any other host renders no link at all, so a hallucinated URL never
   becomes a click target. The button label names the site from the URL itself,
