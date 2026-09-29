@@ -1,22 +1,31 @@
-# PriceWin plugin for Hermes Desktop
+# PriceWin plugin for Hermes
 
-Renders PriceWin hotel and flight results as inline cards in the Hermes Desktop
-transcript instead of raw JSON.
+Live hotel and flight prices compared across Booking.com, Agoda, Trip.com and
+Traveloka, in one install. A portable Agent Plugins v1 package that bundles:
 
-This package is **UI only**. It registers no tools, no hooks, no middleware, and
-needs no credentials — the search itself comes from the `pricewin` MCP catalog
-entry.
+- **`mcp.json`** — the PriceWin MCP server, `https://mcp.price.win/mcp`
+  (Streamable HTTP, no account, no API key);
+- **`skills/pricewin-travel-search`** — how to run a search (results arrive in
+  two steps), ask for what the guest has not said, and read prices in USD;
+- **`desktop/plugin.js`** — inline hotel and flight cards in the Hermes Desktop
+  transcript instead of raw text.
 
-## Prerequisites
+## Install
 
 ```bash
-hermes mcp install pricewin      # the tools (hotel + flight search)
-hermes plugins install PriceDotWin/pricewin-hermes-plugin --enable
+hermes plugins install pricewin
+hermes plugins enable pricewin
 ```
 
-Without the MCP entry the plugin still loads, it just has nothing to draw. With
-the plugin disabled the directives below degrade to the plain paragraphs they
-always were, so nothing breaks either way.
+Start a new session so the MCP tools load. The tools appear as
+`mcp_pricewin_<tool>`.
+
+The server exposes all twelve of its tools, including the four that act on a
+booking: `request_booking` sends a request the hotel confirms (nothing is
+charged, no room is held, the guest pays at the property), `check_booking_status`
+reads it back, and cancelling takes a single-use token emailed to the guest
+(`request_cancel_token`, then `cancel_booking`), so nothing is cancelled without
+the guest's own inbox.
 
 ## What it renders
 
@@ -63,9 +72,10 @@ them and drops anything it cannot parse:
 - `price` must be a positive number; `stars` must be 1–5.
 - A card with no `name` (hotel) or `route` (flight) renders nothing.
 
-The plugin makes no network requests, reads no files, and stores no state. Links
-open in the system browser through `ctx.os.openExternal`. Payment and booking
-always happen on the linked site, never in the transcript.
+The Desktop half makes no network requests, reads no files, and stores no
+state. Links open in the system browser through `ctx.os.openExternal`. A card
+never takes a booking or a payment: an OTA result is booked on the linked site,
+and no step anywhere in this plugin takes money.
 
 ## Development
 

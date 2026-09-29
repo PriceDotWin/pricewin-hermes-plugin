@@ -1,6 +1,7 @@
 // PriceWin — inline result cards for the Hermes Desktop transcript.
 //
-// The agent gets hotel and flight data from the `pricewin` MCP catalog entry.
+// The agent gets hotel and flight data from the PriceWin MCP server this
+// package bundles (mcp.json); the bundled skill tells it to write directives.
 // This plugin only changes how one result LOOKS: instead of a wall of JSON the
 // model writes a directive paragraph and the transcript renders a card.
 //
