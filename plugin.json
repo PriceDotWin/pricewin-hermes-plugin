@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "pricewin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Live hotel and flight prices from Booking.com, Agoda, Trip.com and Traveloka through the PriceWin MCP server, with the pricewin-travel-search skill and inline result cards for Hermes Desktop bundled.",
   "author": {
     "name": "PriceWin",
